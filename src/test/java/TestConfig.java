@@ -1,8 +1,6 @@
 import org.aeonbits.owner.Config;
 
-@Config.Sources({
-        "classpath:testing.properties"
-})
+@Config.Sources({"classpath:testing.properties"})
 public interface TestConfig extends Config {
     @Key("baseUrl")
     String baseUrl();
@@ -24,6 +22,9 @@ public interface TestConfig extends Config {
 
     @Key("main")
     String main();
+
+    @Key("profile")
+    String profile();
 
     @Key("phone_number")
     String phone_number();

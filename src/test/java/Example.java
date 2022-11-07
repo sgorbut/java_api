@@ -13,7 +13,8 @@ public class Example {
         get.config(token);
         get.main(token);
         post.requestToken(token);
-        post.authorization(token);
+        String authorizedUserToken = post.authorization(token);
+        get.profile(authorizedUserToken);
 
     }
 
