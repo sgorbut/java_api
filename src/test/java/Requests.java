@@ -1,15 +1,15 @@
-import models.ProfileResponse;
-import models.TokenResponse;
-import models.Headers;
+import models.*;
 import org.aeonbits.owner.ConfigFactory;
 import org.assertj.core.api.AssertionsForClassTypes;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public class Requests {
 
@@ -154,10 +154,30 @@ public class Requests {
                         .get(config.baseUrl()+config.profile())
                         .then()
                         .statusCode(200)
+                        .body("phone", is(config.phone_number()))
                         .extract().as(ProfileResponse.class);
 
         AssertionsForClassTypes.assertThat(response.getIsRegistered()).isTrue();
-        AssertionsForClassTypes.assertThat(response.getPhone()).isEqualTo(config.phone_number());
+    //    AssertionsForClassTypes.assertThat(response.getPhone()).isEqualTo(config.phone_number());
+
+    }
+
+    public void checkCartIsEmpty(String token){
+
+        TestConfig config = ConfigFactory.create(TestConfig.class, System.getProperties());
+
+        CartResponse response =
+                given()
+                        .log().uri()
+                        .contentType(JSON)
+                        .headers(headers.authorizedHeaders(token))
+                        .when()
+                        .get(config.baseUrl()+config.cart() + "?updatingCart=true&cartType=regular")
+                        .then()
+                        .statusCode(200)
+                        .extract().as(CartResponse.class);
+
+        AssertionsForClassTypes.assertThat(response.getCart()).isNull(); // Не всегда null при пустой корзине
 
     }
 

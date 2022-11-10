@@ -24,6 +24,9 @@ public interface TestConfig extends Config {
     @Key("main")
     String main();
 
+    @Key("cart")
+    String cart();
+
     @Key("profile")
     String profile();
 
