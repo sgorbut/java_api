@@ -1,9 +1,13 @@
+import io.restassured.response.Response;
 import models.*;
 import org.aeonbits.owner.ConfigFactory;
 import org.assertj.core.api.AssertionsForClassTypes;
 
-import java.util.Arrays;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
@@ -166,18 +170,61 @@ public class Requests {
 
         TestConfig config = ConfigFactory.create(TestConfig.class, System.getProperties());
 
-        CartResponse response =
+        Response cartValue =
                 given()
                         .log().uri()
                         .contentType(JSON)
                         .headers(headers.authorizedHeaders(token))
-                        .when()
-                        .get(config.baseUrl()+config.cart() + "?updatingCart=true&cartType=regular")
-                        .then()
-                        .statusCode(200)
-                        .extract().as(CartResponse.class);
+                        .get(config.baseUrl()+config.cart() + "?updatingCart=true&cartType=regular");
 
-        AssertionsForClassTypes.assertThat(response.getCart()).isNull(); // Не всегда null при пустой корзине
+        String cart = cartValue.jsonPath().getString("cart");
+        if (cart == null) {
+            System.out.println("Cart is null");
+        } else {
+            assertThat("Cart is not empty",
+                    cartValue.jsonPath().getString("cart"),
+                    containsString("totalPrice:0"));
+            System.out.println("Cart es empty, totalPrice = 0");
+        }
+
+    }
+
+    public int getAddressId(String token){
+
+        TestConfig config = ConfigFactory.create(TestConfig.class, System.getProperties());
+
+        // Получаем массив с сохраненными адресами пользователя
+        Response allAddresses =
+            given()
+                    .log().uri()
+                    .contentType(JSON)
+                    .headers(headers.authorizedHeaders(token))
+                    .get(config.baseUrl()+config.addresses()+"?regionId=1");
+
+
+        List<Map<Integer, Integer>> addressId = allAddresses.jsonPath().getList("addresses");
+        int firstAddressId = addressId.get(0).get("addressId");
+        return firstAddressId;
+
+    }
+
+    public void changeAddress(String token, int addressId){
+
+        TestConfig config = ConfigFactory.create(TestConfig.class, System.getProperties());
+
+        // Body
+        Map<String, String> bodyData = new HashMap<>();
+        bodyData.put("addressId", "" + addressId + "");
+
+        given()
+                .log().uri()
+                .contentType(JSON)
+                .headers(headers.authorizedHeaders(token))
+                .body(bodyData)
+                .when()
+                .put(config.baseUrl()+config.primary_address())
+                .then()
+                .statusCode(200);
 
     }
 

@@ -30,6 +30,12 @@ public interface TestConfig extends Config {
     @Key("profile")
     String profile();
 
+    @Key("addresses")
+    String addresses();
+
+    @Key("primary-address")
+    String primary_address();
+
     @Key("phone_number")
     String phone_number();
 
