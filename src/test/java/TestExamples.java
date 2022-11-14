@@ -1,8 +1,4 @@
-import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-import java.util.Map;
 
 public class TestExamples {
 
@@ -52,4 +48,17 @@ public class TestExamples {
 
     }
 
+    @Test
+    public void testChangePrimaryAddress() {
+
+        Requests request = new Requests();
+
+        String token = request.token();
+        request.app_update_availability(token);
+        request.main(token);
+        request.requestToken(token);
+        String authorizedUserToken = request.authorization(token);
+        int addressId = request.getDeliveryAddressId(authorizedUserToken);
+        request.setPrimaryAddress(authorizedUserToken, addressId);
+    }
 }

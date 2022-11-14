@@ -13,6 +13,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 public class Requests {
@@ -40,6 +41,7 @@ public class Requests {
                         .post(config.baseUrl()+config.oauth_token())
                         .then()
                         .statusCode(200)
+                        .body("token_type", equalTo("Bearer"))
                         .extract().as(TokenResponse.class);
 
         return response.getAccess_token();
@@ -225,6 +227,53 @@ public class Requests {
                 .put(config.baseUrl()+config.primary_address())
                 .then()
                 .statusCode(200);
+
+    }
+
+    public int getDeliveryAddressId(String token){
+
+        TestConfig config = ConfigFactory.create(TestConfig.class, System.getProperties());
+
+        List<AddressesResponse> response =
+                given()
+                        .log().uri()
+                        .contentType(JSON)
+                        .headers(headers.authorizedHeaders(token))
+                        .when()
+                        .get(config.baseUrl()+config.addresses()+"?regionId=1")
+                        .then()
+                        .statusCode(200)
+                        .extract().body().jsonPath().getList("addresses", AddressesResponse.class);
+
+        Integer id = response.get(1).getAddressId();
+        String address = response.get(1).getAddress();
+        System.out.println(id);
+        System.out.println(address);
+
+        return id;
+    }
+
+    public void setPrimaryAddress(String token, int addressId){
+
+        TestConfig config = ConfigFactory.create(TestConfig.class, System.getProperties());
+
+        // Body
+        Map<String, Integer> bodyData = new HashMap<>();
+        bodyData.put("addressId", addressId);
+
+        PrimaryAddressResponse response =
+                given()
+                        .log().uri()
+                        .contentType(JSON)
+                        .headers(headers.authorizedHeaders(token))
+                        .body(bodyData)
+                        .when()
+                        .put(config.baseUrl()+config.primary_address())
+                        .then()
+                        .statusCode(200)
+                        .extract().as(PrimaryAddressResponse.class);
+
+        assertThat(response.getAddressId() == addressId);
 
     }
 
